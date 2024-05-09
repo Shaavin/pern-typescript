@@ -1,0 +1,72 @@
+###########################################################################
+# Docker is a virtualization tool that enables you to programmatically
+# define a series of services (e.g. servers), mappings from ports on the
+# machine you're running on to the virtualized environment, etc.
+#
+# The Docker compose file here is a high-level overview of these items.
+# For us, each service will represent a server (the front-end server,
+# the back-end server, and the database), and the mappings for each will
+# associate ports on our device to ports used by the virtualized
+# environment.
+###########################################################################
+
+# Define a set of services that make up this Docker container
+services:
+  # Create a service named `postgres`
+  # This will be a PostgreSQL database which runs during local development
+  postgres:
+    # Use this image of a PostgreSQL from the DockerHub registry
+    image: postgres:13.6
+    # Make these variables available within runtime environment
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: starter_db
+    # Map host ports to container ports (formatted as "HOST_PORT:CONTAINER_PORT")
+    ports:
+      - 5432:5432
+    # Mapping a volume named "data" to the Postgres data directory
+    volumes:
+      - data:/var/lib/postgresql/data
+
+  # Create a service named `client`
+  # This will be a front-end server which runs during local development
+  client:
+    # Define build steps in another file
+    build:
+      context: .
+      dockerfile: web.dockerfile
+    # Map host ports to container ports (formatted as "HOST_PORT:CONTAINER_PORT")
+    ports:
+     - 3000:3000
+    # Make these variables available within runtime environment
+    env_file:
+      - client/.env
+    # Map host memory to container memory for persistence between sessions
+    volumes:
+      - ./client:/app/client
+  
+  # Create a service named `server`
+  # This will be a back-end server which runs during local development
+  server:
+    # Define build steps in another file
+    build:
+      context: .
+      dockerfile: server.dockerfile
+    # Instruct this not to build until service `postgres` is built
+    depends_on:
+      - postgres
+    # Make these variables available within runtime environment
+    env_file:
+      - server/.env
+    # Map host ports to container ports (formatted as "HOST_PORT:CONTAINER_PORT")
+    ports:
+      - 8080:8080
+    # Map host memory to container memory for persistence between sessions
+    volumes:
+      - ./server:/app/server
+
+# The `postgres` service references the volume `data` in its volumes mapping,
+# so we need to declare it here
+volumes:
+  data:
