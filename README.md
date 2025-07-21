@@ -1,6 +1,6 @@
 # Learn PERN + TypeScript Repository
 
-A starter-kit for getting started with the PERN + TypeScript technology stack.
+A starter-kit for getting started with the PERN + TypeScript technology stack. I put this together to help teach some family & friends about modern web development.
 
 ## What is PERN
 
